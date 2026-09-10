@@ -65,9 +65,14 @@
      <p id="noProducts" class="hidden py-14 text-center font-bold text-[#806e55]">لا توجد منتجات مطابقة لبحثك.</p>
     </section>
    </main>
-   <footer class="border-t border-[#ead9b8] bg-[#f4e4c3] px-5 py-7 text-center">
-    <p class="m-0 text-sm text-[#72572d]">عسل طبيعي مختار بعناية لأجمل لحظاتك اليومية.</p>
-    <button id="adminOpen" type="button" class="mt-4 rounded-xl border border-[#c9984b] bg-transparent px-4 py-2 text-sm font-bold text-[#7f4b09]">إعدادات المدير</button>
+   <footer class="border-t border-[#ead9b8] bg-[#f4e4c3] px-5 py-8 text-center">
+    <p class="m-0 text-sm font-bold text-[#72572d]">عسل طبيعي مختار بعناية لأجمل لحظاتك اليومية.</p>
+    <div class="mt-4">
+      <button id="adminOpen" type="button" class="inline-flex items-center gap-2 rounded-xl bg-[#7f4b09] px-5 py-2.5 font-bold text-white shadow-md hover:bg-[#5c3505]">
+        <i data-lucide="settings" width="18"></i>
+        <span>إعدادات المدير</span>
+      </button>
+    </div>
    </footer>
   </div>
 
@@ -99,18 +104,18 @@
     </div>
     <form id="adminLoginForm" class="space-y-4">
      <div>
-       <label for="ghUsername">اسم حساب GitHub (Username)</label>
-       <input id="ghUsername" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: my-username">
+       <label for="ghUsername" class="block font-bold mb-1 text-sm">اسم حساب GitHub (Username)</label>
+       <input id="ghUsername" required class="w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: my-username">
      </div>
      <div>
-       <label for="ghRepo">اسم المستودع (Repository Name)</label>
-       <input id="ghRepo" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: honey-store">
+       <label for="ghRepo" class="block font-bold mb-1 text-sm">اسم المستودع (Repository Name)</label>
+       <input id="ghRepo" required class="w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: honey-store">
      </div>
      <div>
-       <label for="ghToken">Personal Access Token</label>
-       <input id="ghToken" required type="password" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3" placeholder="ghp_xxxxxxxxxxxx">
+       <label for="ghToken" class="block font-bold mb-1 text-sm">Personal Access Token</label>
+       <input id="ghToken" required type="password" class="w-full rounded-xl border border-[#dcc49c] p-3" placeholder="ghp_xxxxxxxxxxxx">
      </div>
-     <button type="submit" class="w-full rounded-xl bg-[#7f4b09] p-3 font-bold text-white">دخول لوحة التحكم</button>
+     <button type="submit" class="w-full rounded-xl bg-[#7f4b09] p-3 font-bold text-white shadow-md">دخول لوحة التحكم</button>
     </form>
    </section>
   </div>
@@ -121,7 +126,7 @@
     <header class="flex flex-wrap items-center justify-between gap-3 border-b border-[#ead9b8] bg-[#fff8e9] p-5">
      <h2 class="m-0 font-extrabold text-2xl text-[#2b2116]">لوحة إدارة المتجر (GitHub Direct Update)</h2>
      <div class="flex gap-2">
-       <button id="saveToGithub" class="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white">حفظ التغييرات في GitHub</button>
+       <button id="saveToGithub" class="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow">حفظ التغييرات في GitHub</button>
        <button id="adminLogout" class="rounded-xl border border-[#d8ad61] px-3 py-2 text-sm font-bold text-[#7f4b09]" type="button">خروج</button>
        <button class="close-admin rounded-full p-2" type="button"><i data-lucide="x"></i></button>
      </div>
@@ -173,7 +178,7 @@
   <script>
     (() => {
       let store = {}, cart = new Map(), currentBanner = 0, selectedProduct = null;
-      let fileSha = ""; // لازمة لتحديث الملف عبر GitHub API
+      let fileSha = ""; 
       let ghConfig = { user: "", repo: "", token: "" };
 
       const $ = id => document.getElementById(id);
@@ -324,7 +329,7 @@
         }
       }
 
-      // --- GitHub Direct API Functions ---
+      // GitHub Direct API
       async function fetchGithubFileSha() {
         const url = `https://api.github.com/repos/${ghConfig.user}/${ghConfig.repo}/contents/data.json`;
         const res = await fetch(url, {
@@ -341,7 +346,6 @@
       async function saveToGithubAPI() {
         const url = `https://api.github.com/repos/${ghConfig.user}/${ghConfig.repo}/contents/data.json`;
         
-        // تحويل النص إلى Base64 مع دعم اللغة العربية UTF-8
         const jsonString = JSON.stringify(store, null, 2);
         const utf8Bytes = new TextEncoder().encode(jsonString);
         const base64Content = btoa(String.fromCharCode(...utf8Bytes));
@@ -373,7 +377,6 @@
         }
       }
 
-      // Admin Panel Views
       function renderAdmin(view = "products") {
         document.querySelectorAll(".admin-tab").forEach(b => b.classList.toggle("active", b.dataset.adminView === view));
         const host = $("adminContent");
