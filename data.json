@@ -9,10 +9,22 @@
   "whatsapp": "201000000000",
   "whatsappTemplate": "مرحباً، أود تأكيد طلبي من {store}.%0Aالاسم: {name}%0Aالهاتف: {phone}%0Aالعنوان: {address}%0Aالطلب: {order}%0Aالإجمالي: {total}",
   "categories": [
-    { "id": "all", "name": "الكل" },
-    { "id": "premium", "name": "عسل فاخر" },
-    { "id": "natural", "name": "عسل طبيعي" },
-    { "id": "comb", "name": "منتجات النحل" }
+    {
+      "id": "all",
+      "name": "الكل"
+    },
+    {
+      "id": "premium",
+      "name": "عسل فاخر"
+    },
+    {
+      "id": "natural",
+      "name": "عسل طبيعي"
+    },
+    {
+      "id": "comb",
+      "name": "منتجات النحل"
+    }
   ],
   "banners": [
     {
@@ -30,42 +42,5 @@
       "active": true
     }
   ],
-  "products": [
-    {
-      "id": "sidr",
-      "name": "عسل السدر الجبلي",
-      "price": 420,
-      "category": "premium",
-      "description": "نكهة غنية وقوام كثيف من رحيق أشجار السدر.",
-      "image": "https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&w=600&q=80",
-      "visible": true
-    },
-    {
-      "id": "wild",
-      "name": "عسل الزهور البرية",
-      "price": 280,
-      "category": "natural",
-      "description": "مذاق خفيف مستخلص من رحيق الأزهار الموسمية.",
-      "image": "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=600&q=80",
-      "visible": true
-    },
-    {
-      "id": "blackseed",
-      "name": "عسل حبة البركة",
-      "price": 310,
-      "category": "natural",
-      "description": "مزيج طبيعي بطابع دافئ ولمسة حبة البركة.",
-      "image": "https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&w=600&q=80",
-      "visible": true
-    },
-    {
-      "id": "comb",
-      "name": "شمع عسل طبيعي",
-      "price": 190,
-      "category": "comb",
-      "description": "قطع شمع عسل طبيعية بطعم مباشر من الخلية.",
-      "image": "https://images.unsplash.com/photo-1587049352851-8d4e89133924?auto=format&fit=crop&w=600&q=80",
-      "visible": true
-    }
-  ]
+  "products": []
 }
