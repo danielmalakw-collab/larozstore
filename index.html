@@ -28,7 +28,7 @@
   <div class="app-shell">
    <header class="sticky top-0 z-30 border-b border-[#ead9b8] bg-[#fffdf8]/95 backdrop-blur">
     <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-4 sm:px-8">
-     <a href="#" class="flex items-center gap-3 no-underline text-inherit" aria-label="الصفحة الرئيسية">
+     <a href="#" class="flex items-center gap-3 no-underline text-inherit">
       <div id="logoHolder" class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[#c98312] text-white shadow-sm"><i data-lucide="hexagon" width="24"></i></div>
       <div>
        <p class="m-0 text-xs font-bold text-[#9a610c]">من خلية النحل إلى مائدتك</p>
@@ -67,6 +67,7 @@
    </main>
    <footer class="border-t border-[#ead9b8] bg-[#f4e4c3] px-5 py-7 text-center">
     <p class="m-0 text-sm text-[#72572d]">عسل طبيعي مختار بعناية لأجمل لحظاتك اليومية.</p>
+    <button id="adminOpen" type="button" class="mt-4 rounded-xl border border-[#c9984b] bg-transparent px-4 py-2 text-sm font-bold text-[#7f4b09]">إعدادات المدير</button>
    </footer>
   </div>
 
@@ -88,6 +89,51 @@
     <button id="checkoutOpen" type="button" class="focus-ring w-full rounded-xl bg-[#c98312] px-4 py-3 font-bold text-white">إتمام الطلب</button>
    </div>
   </aside>
+
+  <!-- Modal Admin Login -->
+  <div id="adminLoginModal" class="modal-layer fixed inset-0 z-[70] flex items-center justify-center bg-[#2b2116]/60 p-4">
+   <section class="modal-box w-full max-w-md rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
+    <div class="mb-5 flex justify-between">
+     <h2 class="m-0 font-extrabold text-2xl text-[#2b2116]">دخول المدير</h2>
+     <button class="close-login focus-ring rounded-full p-1"><i data-lucide="x"></i></button>
+    </div>
+    <form id="adminLoginForm" class="space-y-4">
+     <div>
+       <label for="ghUsername">اسم حساب GitHub (Username)</label>
+       <input id="ghUsername" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: my-username">
+     </div>
+     <div>
+       <label for="ghRepo">اسم المستودع (Repository Name)</label>
+       <input id="ghRepo" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: honey-store">
+     </div>
+     <div>
+       <label for="ghToken">Personal Access Token</label>
+       <input id="ghToken" required type="password" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3" placeholder="ghp_xxxxxxxxxxxx">
+     </div>
+     <button type="submit" class="w-full rounded-xl bg-[#7f4b09] p-3 font-bold text-white">دخول لوحة التحكم</button>
+    </form>
+   </section>
+  </div>
+
+  <!-- Modal Admin Dashboard -->
+  <div id="adminModal" class="modal-layer fixed inset-0 z-[70] overflow-y-auto bg-[#2b2116]/60 p-3 sm:p-6">
+   <section class="modal-box mx-auto my-3 w-full max-w-5xl rounded-3xl bg-[#fffdf8] shadow-2xl">
+    <header class="flex flex-wrap items-center justify-between gap-3 border-b border-[#ead9b8] bg-[#fff8e9] p-5">
+     <h2 class="m-0 font-extrabold text-2xl text-[#2b2116]">لوحة إدارة المتجر (GitHub Direct Update)</h2>
+     <div class="flex gap-2">
+       <button id="saveToGithub" class="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white">حفظ التغييرات في GitHub</button>
+       <button id="adminLogout" class="rounded-xl border border-[#d8ad61] px-3 py-2 text-sm font-bold text-[#7f4b09]" type="button">خروج</button>
+       <button class="close-admin rounded-full p-2" type="button"><i data-lucide="x"></i></button>
+     </div>
+    </header>
+    <div class="flex flex-wrap gap-2 border-b border-[#ead9b8] p-4">
+     <button class="admin-tab active rounded-xl border border-[#dcc49c] px-3 py-2 text-sm font-bold" data-admin-view="products">المنتجات</button> 
+     <button class="admin-tab rounded-xl border border-[#dcc49c] px-3 py-2 text-sm font-bold" data-admin-view="categories">الأقسام</button> 
+     <button class="admin-tab rounded-xl border border-[#dcc49c] px-3 py-2 text-sm font-bold" data-admin-view="banners">البانر</button> 
+    </div>
+    <div id="adminContent" class="p-5"></div>
+   </section>
+  </div>
 
   <div id="productModal" class="modal-layer fixed inset-0 z-[60] flex items-center justify-center bg-[#2b2116]/55 p-4">
    <section class="modal-box w-full max-w-lg rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
@@ -127,6 +173,9 @@
   <script>
     (() => {
       let store = {}, cart = new Map(), currentBanner = 0, selectedProduct = null;
+      let fileSha = ""; // لازمة لتحديث الملف عبر GitHub API
+      let ghConfig = { user: "", repo: "", token: "" };
+
       const $ = id => document.getElementById(id);
       const money = n => new Intl.NumberFormat("ar-EG").format(Number(n)) + " ج.م";
       const safe = s => String(s || "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
@@ -263,7 +312,7 @@
 
       async function initData() {
         try {
-          const res = await fetch("data.json");
+          const res = await fetch("data.json?cache=" + Date.now());
           store = await res.json();
           applyIdentity();
           renderBanners();
@@ -275,6 +324,98 @@
         }
       }
 
+      // --- GitHub Direct API Functions ---
+      async function fetchGithubFileSha() {
+        const url = `https://api.github.com/repos/${ghConfig.user}/${ghConfig.repo}/contents/data.json`;
+        const res = await fetch(url, {
+          headers: { Authorization: `token ${ghConfig.token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          fileSha = data.sha;
+          return true;
+        }
+        return false;
+      }
+
+      async function saveToGithubAPI() {
+        const url = `https://api.github.com/repos/${ghConfig.user}/${ghConfig.repo}/contents/data.json`;
+        
+        // تحويل النص إلى Base64 مع دعم اللغة العربية UTF-8
+        const jsonString = JSON.stringify(store, null, 2);
+        const utf8Bytes = new TextEncoder().encode(jsonString);
+        const base64Content = btoa(String.fromCharCode(...utf8Bytes));
+
+        const body = {
+          message: "تحديث المنتجات والبيانات من لوحة التحكم",
+          content: base64Content,
+          sha: fileSha
+        };
+
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${ghConfig.token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          fileSha = data.content.sha;
+          toast("تم حفظ الملف وتحديث GitHub بنجاح!");
+          renderProducts();
+          renderFilters();
+          renderBanners();
+        } else {
+          toast("حدث خطأ أثناء الحفظ على GitHub.");
+        }
+      }
+
+      // Admin Panel Views
+      function renderAdmin(view = "products") {
+        document.querySelectorAll(".admin-tab").forEach(b => b.classList.toggle("active", b.dataset.adminView === view));
+        const host = $("adminContent");
+        if (view === "products") {
+          host.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-lg">إدارة المنتجات</h3>
+              <button id="addProductBtn" class="bg-[#c98312] text-white px-3 py-1.5 rounded-lg font-bold text-sm">+ إضافة منتج</button>
+            </div>
+            <div class="space-y-3">
+              ${store.products.map(p => `
+                <div class="flex items-center justify-between border p-3 rounded-xl bg-white">
+                  <div class="flex items-center gap-3">
+                    <img src="${safe(p.image)}" class="w-12 h-12 rounded-lg object-cover">
+                    <div>
+                      <p class="font-bold m-0">${safe(p.name)}</p>
+                      <p class="text-xs text-gray-500 m-0">${money(p.price)}</p>
+                    </div>
+                  </div>
+                  <button class="del-prod text-red-600 font-bold text-sm" data-id="${p.id}">حذف</button>
+                </div>
+              `).join("")}
+            </div>`;
+          document.querySelectorAll(".del-prod").forEach(b => b.onclick = () => {
+            store.products = store.products.filter(x => x.id !== b.dataset.id);
+            renderAdmin("products");
+          });
+          $("addProductBtn").onclick = () => {
+            const name = prompt("اسم المنتج:");
+            const price = Number(prompt("السعر:") || 0);
+            const image = prompt("رابط الصورة:") || "https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&w=600&q=80";
+            if (name && price) {
+              store.products.push({ id: "p" + Date.now(), name, price, category: "natural", description: "وصف المنتج الجديد", image, visible: true });
+              renderAdmin("products");
+            }
+          };
+        } else if (view === "categories") {
+          host.innerHTML = `<p class="text-sm font-bold text-gray-600">يمكنك تعديل باقي الأقسام بحسب الحاجة.</p>`;
+        }
+      }
+
+      // Event Listeners
       $("cartButton").onclick = () => setCartOpen(!$("cartDrawer").classList.contains("open"));
       document.querySelectorAll(".close-cart").forEach(b => b.onclick = () => setCartOpen(false));
       $("cartBackdrop").onclick = () => setCartOpen(false);
@@ -285,6 +426,32 @@
       $("modalAddProduct").onclick = () => { if (selectedProduct) addToCart(selectedProduct.id); closeModal("productModal"); };
       $("checkoutOpen").onclick = () => { if (!cart.size) { toast("سلتك فارغة حالياً"); return; } setCartOpen(false); openModal("checkoutModal"); };
       document.querySelector(".close-checkout").onclick = () => closeModal("checkoutModal");
+
+      $("adminOpen").onclick = () => openModal("adminLoginModal");
+      document.querySelector(".close-login").onclick = () => closeModal("adminLoginModal");
+      document.querySelector(".close-admin").onclick = () => closeModal("adminModal");
+      $("adminLogout").onclick = () => { closeModal("adminModal"); toast("تم الخروج"); };
+
+      $("adminLoginForm").onsubmit = async e => {
+        e.preventDefault();
+        ghConfig.user = $("ghUsername").value.trim();
+        ghConfig.repo = $("ghRepo").value.trim();
+        ghConfig.token = $("ghToken").value.trim();
+
+        toast("جارٍ التحقق من بيانات GitHub...");
+        const ok = await fetchGithubFileSha();
+        if (ok) {
+          closeModal("adminLoginModal");
+          openModal("adminModal");
+          renderAdmin("products");
+          toast("تم الاتصال بـ GitHub بنجاح");
+        } else {
+          toast("فشل الاتصال! تأكد من اسم الحساب، المستودع، و Token.");
+        }
+      };
+
+      $("saveToGithub").onclick = saveToGithubAPI;
+      document.querySelectorAll(".admin-tab").forEach(b => b.onclick = () => renderAdmin(b.dataset.adminView));
 
       $("checkoutForm").onsubmit = e => {
         e.preventDefault();
@@ -308,8 +475,6 @@
         closeModal("checkoutModal");
         $("checkoutForm").reset();
       };
-
-      document.addEventListener("keydown", e => { if (e.key === "Escape") { setCartOpen(false); ["productModal", "checkoutModal"].forEach(closeModal); } });
 
       initData();
     })();
