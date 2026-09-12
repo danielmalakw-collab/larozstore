@@ -4,222 +4,241 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>متجر عسل النحل</title>
+  
+  <!-- Tailwind CSS & Lucide Icons -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.577.0/dist/umd/lucide.min.js"></script>
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <style>
-    :root{--honey:#c98312;--deep:#7f4b09;--cream:#fff8e9;--paper:#fffdf8;--ink:#2b2116;--line:#ead9b8;--muted:#74634d}
-    *{box-sizing:border-box} html{background:var(--cream)} body{margin:0;width:100%;min-height:100vh;font-family:"Noto Sans Arabic",sans-serif;color:var(--ink);background:var(--cream)}
-    .app-shell{width:100%;min-height:100vh;overflow-x:hidden;background-color:var(--cream);background-image:radial-gradient(circle at 1px 1px,rgba(201,131,18,.1) 1px,transparent 0);background-size:18px 18px}
-    .focus-ring:focus-visible{outline:3px solid rgba(201,131,18,.45);outline-offset:3px}
-    #cartDrawer,#cartBackdrop,.modal-layer{visibility:hidden;opacity:0;pointer-events:none}
-    #cartDrawer{transform:translateX(105%);transition:transform .32s ease,opacity .2s ease,visibility 0s linear .32s}
-    #cartDrawer.open{visibility:visible;opacity:1;pointer-events:auto;transform:translateX(0);transition:transform .32s ease,opacity .2s ease}
-    #cartBackdrop.open,.modal-layer.open{visibility:visible;opacity:1;pointer-events:auto;transition:opacity .2s ease}
-    .modal-layer{transition:opacity .2s ease}
-    .modal-box{transform:translateY(16px) scale(.98);transition:transform .2s ease}.modal-layer.open .modal-box{transform:translateY(0) scale(1)}
-    .product-card{transition:transform .2s ease,box-shadow .2s ease}.product-card:hover{transform:translateY(-5px);box-shadow:0 20px 34px rgba(89,54,10,.14)}
-    .banner-slide{display:none}.banner-slide.active{display:grid;animation:fade .45s ease}.admin-tab.active{background:var(--honey);color:#fff;border-color:var(--honey)}
-    @keyframes fade{from{opacity:.25;transform:translateY(5px)}to{opacity:1;transform:none}}
-    input,textarea,select{font:inherit}.toast{transform:translateY(20px);opacity:0;pointer-events:none;transition:.25s}.toast.show{transform:translateY(0);opacity:1}
+    :root { --honey: #c98312; --deep: #7f4b09; --cream: #fff8e9; --paper: #fffdf8; --ink: #2b2116; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "Noto Sans Arabic", sans-serif; color: var(--ink); background: var(--cream); }
+    .app-shell { width: 100%; min-height: 100vh; overflow-x: hidden; background-color: var(--cream); background-image: radial-gradient(circle at 1px 1px, rgba(201,131,18,.1) 1px, transparent 0); background-size: 18px 18px; }
+    .focus-ring:focus-visible { outline: 3px solid rgba(201,131,18,.45); outline-offset: 3px; }
+    #cartDrawer, #cartBackdrop, .modal-layer { visibility: hidden; opacity: 0; pointer-events: none; }
+    #cartDrawer { transform: translateX(105%); transition: transform .32s ease, opacity .2s ease; }
+    #cartDrawer.open { visibility: visible; opacity: 1; pointer-events: auto; transform: translateX(0); }
+    #cartBackdrop.open, .modal-layer.open { visibility: visible; opacity: 1; pointer-events: auto; transition: opacity .2s ease; }
+    .modal-box { transform: translateY(16px) scale(.98); transition: transform .2s ease; }
+    .modal-layer.open .modal-box { transform: translateY(0) scale(1); }
+    .product-card { transition: transform .2s ease, box-shadow .2s ease; }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 20px 34px rgba(89,54,10,.14); }
+    .banner-slide { display: none; }
+    .banner-slide.active { display: grid; animation: fade .45s ease; }
+    @keyframes fade { from { opacity: .25; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+    .toast { transform: translateY(20px); opacity: 0; pointer-events: none; transition: .25s; }
+    .toast.show { transform: translateY(0); opacity: 1; }
   </style>
- </head>
- <body>
+</head>
+<body>
   <div class="app-shell">
-   <header class="sticky top-0 z-30 border-b border-[#ead9b8] bg-[#fffdf8]/95 backdrop-blur">
-    <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-4 sm:px-8">
-     <a href="#" class="flex items-center gap-3 no-underline text-inherit">
-      <div id="logoHolder" class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[#c98312] text-white shadow-sm"><i data-lucide="hexagon" width="24"></i></div>
-      <div>
-       <p class="m-0 text-xs font-bold text-[#9a610c]">من خلية النحل إلى مائدتك</p>
-       <h1 id="storeNameDisplay" class="m-0 font-extrabold text-[#2b2116] text-2xl sm:text-3xl">متجر عسل النحل</h1>
-      </div></a> 
-      <button id="cartButton" type="button" class="focus-ring relative inline-flex items-center gap-2 rounded-full border border-[#d8ad61] bg-[#fff8e9] px-4 py-2.5 font-bold text-[#7f4b09] hover:bg-[#f8e7c4]"> 
-        <i data-lucide="shopping-bag" width="20"></i><span>السلة</span> 
-        <span id="cartCount" class="min-w-5 rounded-full bg-[#c98312] px-1.5 py-0.5 text-center text-xs text-white">0</span> 
-      </button>
-    </div>
-   </header>
-   <main>
-    <section class="mx-auto w-full max-w-6xl px-5 pt-8 sm:px-8">
-     <div id="bannerArea" class="relative overflow-hidden rounded-[2rem] border-4 border-[#fffdf8] bg-[#7f4b09] shadow-xl"></div>
-     <div class="mt-3 flex items-center justify-center gap-2">
-      <button id="bannerPrev" class="focus-ring rounded-full bg-[#f4e4c3] p-2 text-[#7f4b09]" type="button"><i data-lucide="chevron-right" width="18"></i></button>
-      <div id="bannerDots" class="flex gap-2"></div>
-      <button id="bannerNext" class="focus-ring rounded-full bg-[#f4e4c3] p-2 text-[#7f4b09]" type="button"><i data-lucide="chevron-left" width="18"></i></button>
-     </div>
-    </section>
-    <section class="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8">
-     <div class="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-      <div>
-       <p class="mb-1 text-sm font-bold text-[#9a610c]">اختياراتنا المميزة</p>
-       <h2 class="m-0 text-2xl font-extrabold text-[#2b2116]">عسل يناسب كل ذوق</h2>
+    <!-- الهيدر -->
+    <header class="sticky top-0 z-30 border-b border-[#ead9b8] bg-[#fffdf8]/95 backdrop-blur">
+      <div class="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-5 py-4 sm:px-8">
+        <a href="#" class="flex items-center gap-3 no-underline text-inherit">
+          <div id="logoHolder" class="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[#c98312] text-white shadow-sm">
+            <i data-lucide="hexagon" width="24"></i>
+          </div>
+          <div>
+            <p class="m-0 text-xs font-bold text-[#9a610c]">من خلية النحل إلى مائدتك</p>
+            <h1 id="storeNameDisplay" class="m-0 font-extrabold text-[#2b2116] text-2xl sm:text-3xl">متجر عسل النحل</h1>
+          </div>
+        </a>
+        <button id="cartButton" type="button" class="focus-ring relative inline-flex items-center gap-2 rounded-full border border-[#d8ad61] bg-[#fff8e9] px-4 py-2.5 font-bold text-[#7f4b09] hover:bg-[#f8e7c4]">
+          <i data-lucide="shopping-bag" width="20"></i>
+          <span>السلة</span>
+          <span id="cartCount" class="min-w-5 rounded-full bg-[#c98312] px-1.5 py-0.5 text-center text-xs text-white">0</span>
+        </button>
       </div>
-      <label class="relative block w-full lg:w-80" for="searchInput">
-        <i data-lucide="search" class="absolute right-4 top-3 text-[#9a610c]" width="19"></i> 
-        <input id="searchInput" type="search" class="focus-ring w-full rounded-xl border border-[#dcc49c] bg-[#fffdf8] py-3 pr-11 pl-4 text-sm outline-none" placeholder="ابحث عن عسل أو منتج"> 
-      </label>
-     </div>
-     <nav id="categoryFilters" class="mb-7 flex flex-wrap gap-2"></nav>
-     <div id="productsGrid" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
-     <p id="noProducts" class="hidden py-14 text-center font-bold text-[#806e55]">لا توجد منتجات مطابقة لبحثك.</p>
-    </section>
-   </main>
-   <footer class="border-t border-[#ead9b8] bg-[#f4e4c3] px-5 py-8 text-center">
-    <p class="m-0 text-sm font-bold text-[#72572d]">عسل طبيعي مختار بعناية لأجمل لحظاتك اليومية.</p>
-    <div class="mt-4">
-      <button id="adminOpen" type="button" class="inline-flex items-center gap-2 rounded-xl bg-[#7f4b09] px-5 py-2.5 font-bold text-white shadow-md hover:bg-[#5c3505]">
-        <i data-lucide="settings" width="18"></i>
-        <span>إعدادات المدير</span>
-      </button>
-    </div>
-   </footer>
+    </header>
+
+    <main>
+      <!-- البانر -->
+      <section class="mx-auto w-full max-w-6xl px-5 pt-8 sm:px-8">
+        <div id="bannerArea" class="relative overflow-hidden rounded-[2rem] border-4 border-[#fffdf8] bg-[#7f4b09] shadow-xl min-h-[220px]"></div>
+        <div class="mt-3 flex items-center justify-center gap-2">
+          <button id="bannerPrev" class="focus-ring rounded-full bg-[#f4e4c3] p-2 text-[#7f4b09]" type="button"><i data-lucide="chevron-right" width="18"></i></button>
+          <div id="bannerDots" class="flex gap-2"></div>
+          <button id="bannerNext" class="focus-ring rounded-full bg-[#f4e4c3] p-2 text-[#7f4b09]" type="button"><i data-lucide="chevron-left" width="18"></i></button>
+        </div>
+      </section>
+
+      <!-- المنتجات -->
+      <section class="mx-auto w-full max-w-6xl px-5 py-12 sm:px-8">
+        <div class="mb-6 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="mb-1 text-sm font-bold text-[#9a610c]">اختياراتنا المميزة</p>
+            <h2 class="m-0 font-extrabold text-[#2b2116] text-2xl">عسل يناسب كل ذوق</h2>
+          </div>
+          <label class="relative block w-full lg:w-80">
+            <i data-lucide="search" class="absolute right-4 top-3 text-[#9a610c]" width="19"></i>
+            <input id="searchInput" type="search" class="focus-ring w-full rounded-xl border border-[#dcc49c] bg-[#fffdf8] py-3 pr-11 pl-4 text-sm outline-none" placeholder="ابحث عن عسل أو منتج">
+          </label>
+        </div>
+
+        <!-- الأقسام -->
+        <nav id="categoryFilters" class="mb-7 flex flex-wrap gap-2"></nav>
+
+        <!-- شبكة المنتجات -->
+        <div id="productsGrid" class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
+        <p id="noProducts" class="hidden py-14 text-center font-bold text-[#806e55]">لا توجد منتجات مطابقة لبحثك.</p>
+      </section>
+    </main>
+
+    <footer class="border-t border-[#ead9b8] bg-[#f4e4c3] px-5 py-7 text-center">
+      <p class="m-0 text-sm text-[#72572d]">عسل طبيعي مختار بعناية لأجمل لحظاتك اليومية.</p>
+    </footer>
   </div>
 
+  <!-- سلة التسوق -->
   <div id="cartBackdrop" class="fixed inset-0 z-40 bg-[#2b2116]/45"></div>
   <aside id="cartDrawer" class="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-[#ead9b8] bg-[#fffdf8] shadow-2xl">
-   <div class="flex items-center justify-between border-b border-[#ead9b8] bg-[#fff8e9] px-5 py-5">
-    <h2 class="m-0 font-extrabold text-[#2b2116] text-xl">سلة التسوق</h2>
-    <button type="button" class="close-cart focus-ring rounded-full p-2 text-[#7f4b09]"><i data-lucide="x"></i></button>
-   </div>
-   <div id="cartItems" class="flex-1 overflow-y-auto px-5 py-3">
-    <div id="emptyCart" class="py-16 text-center">
-     <i data-lucide="shopping-basket" class="mx-auto mb-4 text-[#b3700b]" width="42"></i>
-     <p class="mb-2 font-bold text-[#3d2d1a]">سلتك فارغة حالياً</p>
-     <p class="m-0 text-sm text-[#806e55]">اختر منتجاتك المفضلة وسنحتفظ بها هنا.</p>
+    <div class="flex items-center justify-between border-b border-[#ead9b8] bg-[#fff8e9] px-5 py-5">
+      <h2 class="m-0 font-extrabold text-[#2b2116] text-xl">سلة التسوق</h2>
+      <button type="button" class="close-cart focus-ring rounded-full p-2 text-[#7f4b09]"><i data-lucide="x"></i></button>
     </div>
-   </div>
-   <div class="border-t border-[#ead9b8] bg-[#fff8e9] p-5">
-    <div class="mb-4 flex justify-between"><span class="font-bold text-[#59462c]">الإجمالي</span><output id="cartTotal" class="font-extrabold text-[#9a610c]">0 ج.م</output></div>
-    <button id="checkoutOpen" type="button" class="focus-ring w-full rounded-xl bg-[#c98312] px-4 py-3 font-bold text-white">إتمام الطلب</button>
-   </div>
+    <div id="cartItems" class="flex-1 overflow-y-auto px-5 py-3">
+      <div id="emptyCart" class="py-16 text-center">
+        <i data-lucide="shopping-basket" class="mx-auto mb-4 text-[#b3700b]" width="42"></i>
+        <p class="mb-2 font-bold text-[#3d2d1a]">سلتك فارغة حالياً</p>
+        <p class="m-0 text-sm text-[#806e55]">اختر منتجاتك المفضلة وسنحتفظ بها هنا.</p>
+      </div>
+    </div>
+    <div class="border-t border-[#ead9b8] bg-[#fff8e9] p-5">
+      <div class="mb-4 flex justify-between">
+        <span class="font-bold text-[#59462c]">الإجمالي</span>
+        <output id="cartTotal" class="font-extrabold text-[#9a610c]">0 ج.م</output>
+      </div>
+      <button id="checkoutOpen" type="button" class="focus-ring w-full rounded-xl bg-[#c98312] px-4 py-3 font-bold text-white">إتمام الطلب</button>
+    </div>
   </aside>
 
-  <!-- Modal Admin Login -->
-  <div id="adminLoginModal" class="modal-layer fixed inset-0 z-[70] flex items-center justify-center bg-[#2b2116]/60 p-4">
-   <section class="modal-box w-full max-w-md rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
-    <div class="mb-5 flex justify-between">
-     <h2 class="m-0 font-extrabold text-2xl text-[#2b2116]">دخول المدير</h2>
-     <button class="close-login focus-ring rounded-full p-1"><i data-lucide="x"></i></button>
-    </div>
-    <form id="adminLoginForm" class="space-y-4">
-     <div>
-       <label for="ghUsername" class="block font-bold mb-1 text-sm">اسم حساب GitHub (Username)</label>
-       <input id="ghUsername" required class="w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: my-username">
-     </div>
-     <div>
-       <label for="ghRepo" class="block font-bold mb-1 text-sm">اسم المستودع (Repository Name)</label>
-       <input id="ghRepo" required class="w-full rounded-xl border border-[#dcc49c] p-3" placeholder="مثال: honey-store">
-     </div>
-     <div>
-       <label for="ghToken" class="block font-bold mb-1 text-sm">Personal Access Token</label>
-       <input id="ghToken" required type="password" class="w-full rounded-xl border border-[#dcc49c] p-3" placeholder="ghp_xxxxxxxxxxxx">
-     </div>
-     <button type="submit" class="w-full rounded-xl bg-[#7f4b09] p-3 font-bold text-white shadow-md">دخول لوحة التحكم</button>
-    </form>
-   </section>
-  </div>
-
-  <!-- Modal Admin Dashboard -->
-  <div id="adminModal" class="modal-layer fixed inset-0 z-[70] overflow-y-auto bg-[#2b2116]/60 p-3 sm:p-6">
-   <section class="modal-box mx-auto my-3 w-full max-w-5xl rounded-3xl bg-[#fffdf8] shadow-2xl">
-    <header class="flex flex-wrap items-center justify-between gap-3 border-b border-[#ead9b8] bg-[#fff8e9] p-5">
-     <h2 class="m-0 font-extrabold text-2xl text-[#2b2116]">لوحة إدارة المتجر (GitHub Direct Update)</h2>
-     <div class="flex gap-2">
-       <button id="saveToGithub" class="rounded-xl bg-green-700 px-4 py-2 text-sm font-bold text-white shadow">حفظ التغييرات في GitHub</button>
-       <button id="adminLogout" class="rounded-xl border border-[#d8ad61] px-3 py-2 text-sm font-bold text-[#7f4b09]" type="button">خروج</button>
-       <button class="close-admin rounded-full p-2" type="button"><i data-lucide="x"></i></button>
-     </div>
-    </header>
-    <div class="flex flex-wrap gap-2 border-b border-[#ead9b8] p-4">
-     <button class="admin-tab active rounded-xl border border-[#dcc49c] px-3 py-2 text-sm font-bold" data-admin-view="products">المنتجات</button> 
-     <button class="admin-tab rounded-xl border border-[#dcc49c] px-3 py-2 text-sm font-bold" data-admin-view="categories">الأقسام</button> 
-     <button class="admin-tab rounded-xl border border-[#dcc49c] px-3 py-2 text-sm font-bold" data-admin-view="banners">البانر</button> 
-    </div>
-    <div id="adminContent" class="p-5"></div>
-   </section>
-  </div>
-
+  <!-- تفاصيل المنتج -->
   <div id="productModal" class="modal-layer fixed inset-0 z-[60] flex items-center justify-center bg-[#2b2116]/55 p-4">
-   <section class="modal-box w-full max-w-lg rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
-    <div class="mb-4 flex justify-between">
-     <h2 id="productModalTitle" class="m-0 font-extrabold text-xl"></h2>
-     <button class="close-product focus-ring rounded-full p-1"><i data-lucide="x"></i></button>
-    </div>
-    <img id="productModalImage" class="h-56 w-full rounded-2xl object-cover" alt="">
-    <p id="productModalDescription" class="my-4 leading-8 text-[#695944]"></p>
-    <div class="flex items-center justify-between">
-      <strong id="productModalPrice" class="text-xl text-[#9a610c]"></strong>
-      <button id="modalAddProduct" class="focus-ring rounded-xl bg-[#c98312] px-5 py-2.5 font-bold text-white" type="button">أضف للسلة</button>
-    </div>
-   </section>
+    <section class="modal-box w-full max-w-lg rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
+      <div class="mb-4 flex justify-between">
+        <h2 id="productModalTitle" class="m-0 font-extrabold text-xl"></h2>
+        <button class="close-product focus-ring rounded-full p-1"><i data-lucide="x"></i></button>
+      </div>
+      <img id="productModalImage" class="h-56 w-full rounded-2xl object-cover" alt="">
+      <p id="productModalDescription" class="my-4 leading-8 text-[#695944]"></p>
+      <div class="flex items-center justify-between">
+        <strong id="productModalPrice" class="text-xl text-[#9a610c]"></strong>
+        <button id="modalAddProduct" class="focus-ring rounded-xl bg-[#c98312] px-5 py-2.5 font-bold text-white" type="button">أضف للسلة</button>
+      </div>
+    </section>
   </div>
 
+  <!-- شاشة الشراء وإرسال الطلب -->
   <div id="checkoutModal" class="modal-layer fixed inset-0 z-[60] overflow-y-auto bg-[#2b2116]/55 p-4">
-   <section class="modal-box mx-auto my-6 w-full max-w-xl rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
-    <div class="mb-5 flex items-center justify-between">
-     <h2 class="m-0 font-extrabold text-2xl text-[#2b2116]">بيانات التوصيل</h2>
-     <button class="close-checkout focus-ring rounded-full p-1"><i data-lucide="x"></i></button>
-    </div>
-    <form id="checkoutForm" class="grid gap-4 sm:grid-cols-2">
-     <div><label for="customerName">الاسم الكامل</label><input id="customerName" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
-     <div><label for="customerPhone">رقم الهاتف</label><input id="customerPhone" required inputmode="tel" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
-     <div><label for="customerAltPhone">رقم بديل</label><input id="customerAltPhone" inputmode="tel" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
-     <div><label for="customerCity">المدينة</label><input id="customerCity" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
-     <div class="sm:col-span-2"><label for="customerAddress">العنوان بالتفصيل</label><textarea id="customerAddress" required rows="2" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></textarea></div>
-     <div class="sm:col-span-2"><label for="customerNotes">ملاحظات الطلب</label><textarea id="customerNotes" rows="2" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></textarea></div>
-     <button id="submitOrder" type="submit" class="sm:col-span-2 rounded-xl bg-[#c98312] px-4 py-3 font-bold text-white">إرسال الطلب عبر WhatsApp</button>
-    </form>
-   </section>
+    <section class="modal-box mx-auto my-6 w-full max-w-xl rounded-3xl bg-[#fffdf8] p-6 shadow-2xl">
+      <div class="mb-5 flex items-center justify-between">
+        <h2 class="m-0 font-extrabold text-xl">بيانات التوصيل</h2>
+        <button class="close-checkout focus-ring rounded-full p-1"><i data-lucide="x"></i></button>
+      </div>
+      <form id="checkoutForm" class="grid gap-4 sm:grid-cols-2">
+        <div><label for="customerName" class="text-sm font-bold">الاسم الكامل</label><input id="customerName" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
+        <div><label for="customerPhone" class="text-sm font-bold">رقم الهاتف</label><input id="customerPhone" required inputmode="tel" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
+        <div><label for="customerAltPhone" class="text-sm font-bold">رقم بديل</label><input id="customerAltPhone" inputmode="tel" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
+        <div><label for="customerCity" class="text-sm font-bold">المدينة</label><input id="customerCity" required class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></div>
+        <div class="sm:col-span-2"><label for="customerAddress" class="text-sm font-bold">العنوان بالتفصيل</label><textarea id="customerAddress" required rows="2" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></textarea></div>
+        <div class="sm:col-span-2"><label for="customerNotes" class="text-sm font-bold">ملاحظات الطلب</label><textarea id="customerNotes" rows="2" class="mt-1 w-full rounded-xl border border-[#dcc49c] p-3"></textarea></div>
+        <button id="submitOrder" type="submit" class="sm:col-span-2 rounded-xl bg-[#c98312] px-4 py-3 font-bold text-white">إرسال الطلب عبر WhatsApp</button>
+      </form>
+    </section>
   </div>
 
   <div id="toast" class="toast fixed bottom-5 left-5 z-[100] rounded-xl bg-[#2b2116] px-4 py-3 text-sm font-bold text-white"></div>
 
   <script>
     (() => {
-      let store = {}, cart = new Map(), currentBanner = 0, selectedProduct = null;
-      let fileSha = ""; 
-      let ghConfig = { user: "", repo: "", token: "" };
+      // 🔴 قم باستبدال هذه البيانات ببيانات مشروعك من Supabase
+      const SUPABASE_URL = "YOUR_SUPABASE_URL";
+      const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+      
+      const supabase = (SUPABASE_URL !== "YOUR_SUPABASE_URL") 
+        ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) 
+        : null;
 
+      let store = {
+        storeName: "متجر عسل النحل",
+        whatsapp: "201000000000",
+        categories: [{ id: "all", name: "الكل" }],
+        banners: [],
+        products: []
+      };
+
+      let cart = new Map(), currentBanner = 0, selectedProduct = null;
       const $ = id => document.getElementById(id);
       const money = n => new Intl.NumberFormat("ar-EG").format(Number(n)) + " ج.م";
       const safe = s => String(s || "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m]));
 
-      function toast(msg) { const el = $("toast"); el.textContent = msg; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 3000); }
+      function toast(msg) {
+        const el = $("toast"); el.textContent = msg; el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 3000);
+      }
 
-      function applyIdentity() {
-        if (!store.colors) return;
-        document.documentElement.style.setProperty("--honey", store.colors.honey);
-        document.documentElement.style.setProperty("--deep", store.colors.deep);
-        document.documentElement.style.setProperty("--cream", store.colors.cream);
-        $("storeNameDisplay").textContent = store.storeName;
-        $("logoHolder").innerHTML = store.logoUrl ? `<img src="${safe(store.logoUrl)}" class="h-full w-full object-cover" alt="شعار المتجر">` : '<i data-lucide="hexagon" width="24"></i>';
-        if (window.lucide) lucide.createIcons();
+      // جلب البيانات من Supabase
+      async function fetchStoreData() {
+        if (!supabase) {
+          console.warn("لم يتم ضبط بيانات Supabase بعد.");
+          return;
+        }
+
+        try {
+          // 1. جلب الأقسام
+          const { data: categories } = await supabase.from('categories').select('*');
+          if (categories && categories.length) {
+            store.categories = [{ id: "all", name: "الكل" }, ...categories];
+          }
+
+          // 2. جلب البانرات
+          const { data: banners } = await supabase.from('banners').select('*').eq('active', true);
+          if (banners) store.banners = banners;
+
+          // 3. جلب المنتجات
+          const { data: products } = await supabase.from('products').select('*').eq('visible', true);
+          if (products) store.products = products;
+
+          renderBanners();
+          renderFilters();
+          renderProducts();
+        } catch (err) {
+          console.error("خطأ في جلب البيانات:", err);
+        }
       }
 
       function renderBanners() {
-        const active = (store.banners || []).filter(b => b.active);
-        if (!active.length) { $("bannerArea").innerHTML = ""; return; }
-        currentBanner %= active.length;
-        $("bannerArea").innerHTML = active.map((b, i) => `
-          <article class="banner-slide min-h-[280px] grid-cols-1 bg-[#7f4b09] md:grid-cols-2 ${i === currentBanner ? "active" : ""}">
+        if (!store.banners.length) { $("bannerArea").innerHTML = ""; return; }
+        currentBanner %= store.banners.length;
+        $("bannerArea").innerHTML = store.banners.map((b, i) => `
+          <article class="banner-slide min-h-[260px] grid-cols-1 bg-[#7f4b09] md:grid-cols-2 ${i === currentBanner ? "active" : ""}">
             <div class="flex flex-col justify-center p-7 text-white sm:p-10">
-              <p class="mb-3 text-sm font-bold text-[#ffe3a2]">من خلية النحل إلى مائدتك</p>
               <h2 class="m-0 text-3xl font-extrabold leading-relaxed">${safe(b.title)}</h2>
               <p class="mt-3 max-w-md leading-8 text-[#fff4dc]">${safe(b.text)}</p>
-              <button class="bannerShop mt-4 w-fit rounded-xl bg-[#f4d18c] px-5 py-2.5 font-bold text-[#5c3505]" type="button">تسوق الآن</button>
             </div>
-            <img src="${safe(b.image)}" class="h-56 w-full object-cover md:h-full" alt="${safe(b.title)}">
-          </article>`).join("");
-        $("bannerDots").innerHTML = active.map((_, i) => `<button class="h-2.5 w-2.5 rounded-full ${i === currentBanner ? "bg-[#c98312]" : "bg-[#dfc595]"}" data-dot="${i}"></button>`).join("");
-        document.querySelectorAll(".bannerShop").forEach(b => b.onclick = () => document.getElementById("productsGrid").scrollIntoView({ behavior: "smooth" }));
+            ${b.image ? `<img src="${safe(b.image)}" class="h-56 w-full object-cover md:h-full" alt="">` : ''}
+          </article>
+        `).join("");
+        
+        $("bannerDots").innerHTML = store.banners.map((_, i) => `
+          <button class="h-2.5 w-2.5 rounded-full ${i === currentBanner ? "bg-[#c98312]" : "bg-[#dfc595]"}" data-dot="${i}"></button>
+        `).join("");
+
         document.querySelectorAll("[data-dot]").forEach(b => b.onclick = () => { currentBanner = +b.dataset.dot; renderBanners(); });
       }
 
       function renderFilters() {
         const host = $("categoryFilters");
-        host.innerHTML = (store.categories || []).map(c => `
-          <button class="filter-btn focus-ring rounded-full border border-[#d8ad61] px-4 py-2 text-sm font-bold ${c.id === (host.dataset.active || "all") ? "bg-[#c98312] text-white" : "bg-[#fffdf8] text-[#7f4b09]"}" data-category="${safe(c.id)}">${safe(c.name)}</button>
+        host.innerHTML = store.categories.map(c => `
+          <button class="filter-btn focus-ring rounded-full border border-[#d8ad61] px-4 py-2 text-sm font-bold ${c.id === (host.dataset.active || "all") ? "bg-[#c98312] text-white" : "bg-[#fffdf8] text-[#7f4b09]"}" data-category="${safe(c.id)}">
+            ${safe(c.name)}
+          </button>
         `).join("");
         host.querySelectorAll("button").forEach(b => b.onclick = () => { host.dataset.active = b.dataset.category; renderFilters(); renderProducts(); });
       }
@@ -227,31 +246,33 @@
       function renderProducts() {
         const search = $("searchInput").value.trim().toLowerCase();
         const cat = $("categoryFilters").dataset.active || "all";
-        const list = (store.products || []).filter(p => p.visible && (cat === "all" || p.category === cat) && (`${p.name} ${p.description}`.toLowerCase().includes(search)));
+        const list = store.products.filter(p => (cat === "all" || p.category_id === cat) && (`${p.name} ${p.description}`.toLowerCase().includes(search)));
+        
         $("noProducts").classList.toggle("hidden", !!list.length);
         $("productsGrid").innerHTML = list.map(p => `
           <article class="product-card overflow-hidden rounded-3xl border border-[#ead9b8] bg-[#fffdf8] p-4 shadow-sm">
             <img src="${safe(p.image)}" class="h-48 w-full rounded-2xl object-cover" alt="${safe(p.name)}">
             <div class="pt-4">
-              <p class="mb-1 text-xs font-bold text-[#9a610c]">${safe((store.categories.find(c => c.id === p.category) || {}).name || "")}</p>
               <h3 class="m-0 font-bold text-[#2b2116]">${safe(p.name)}</h3>
               <p class="mt-2 min-h-12 text-sm leading-6 text-[#74634d]">${safe(p.description)}</p>
               <div class="mt-4 flex items-center justify-between gap-2">
                 <strong class="text-[#9a610c]">${money(p.price)}</strong>
                 <div class="flex gap-2">
-                  <button class="details-product rounded-xl border border-[#d8ad61] p-2 text-[#7f4b09]" type="button" data-id="${p.id}"><i data-lucide="eye" width="18"></i></button>
-                  <button class="add-product rounded-xl bg-[#c98312] px-3 py-2 text-sm font-bold text-white" type="button" data-id="${p.id}">أضف للسلة</button>
+                  <button class="details-product rounded-xl border border-[#d8ad61] p-2 text-[#7f4b09]" data-id="${p.id}"><i data-lucide="eye" width="18"></i></button>
+                  <button class="add-product rounded-xl bg-[#c98312] px-3 py-2 text-sm font-bold text-white" data-id="${p.id}">أضف للسلة</button>
                 </div>
               </div>
             </div>
-          </article>`).join("");
+          </article>
+        `).join("");
+
         document.querySelectorAll(".add-product").forEach(b => b.onclick = () => addToCart(b.dataset.id));
         document.querySelectorAll(".details-product").forEach(b => b.onclick = () => openProduct(b.dataset.id));
         if (window.lucide) lucide.createIcons();
       }
 
       function openProduct(id) {
-        selectedProduct = store.products.find(p => p.id === id);
+        selectedProduct = store.products.find(p => String(p.id) === String(id));
         if (!selectedProduct) return;
         $("productModalTitle").textContent = selectedProduct.name;
         $("productModalDescription").textContent = selectedProduct.description;
@@ -266,7 +287,7 @@
       }
 
       function addToCart(id) {
-        const p = store.products.find(x => x.id === id);
+        const p = store.products.find(x => String(x.id) === String(id));
         if (!p) return;
         const x = cart.get(id) || { ...p, quantity: 0 };
         x.quantity++;
@@ -286,13 +307,13 @@
           el.innerHTML = `
             <img src="${safe(p.image)}" class="h-12 w-12 rounded-xl object-cover" alt="">
             <div class="min-w-0 flex-1">
-              <h3 class="m-0 truncate font-bold">${safe(p.name)}</h3>
-              <p class="m-0 text-sm font-bold text-[#9a610c]">${money(p.price)}</p>
+              <h3 class="m-0 truncate font-bold text-sm">${safe(p.name)}</h3>
+              <p class="m-0 text-xs font-bold text-[#9a610c]">${money(p.price)}</p>
             </div>
             <div class="flex items-center gap-2">
-              <button class="minus rounded-lg border border-[#dcc49c] p-1"><i data-lucide="minus" width="16"></i></button>
-              <b>${p.quantity}</b>
-              <button class="plus rounded-lg border border-[#dcc49c] p-1"><i data-lucide="plus" width="16"></i></button>
+              <button class="minus rounded-lg border border-[#dcc49c] p-1"><i data-lucide="minus" width="14"></i></button>
+              <b class="text-sm">${p.quantity}</b>
+              <button class="plus rounded-lg border border-[#dcc49c] p-1"><i data-lucide="plus" width="14"></i></button>
             </div>`;
           el.querySelector(".minus").onclick = () => changeQty(id, -1);
           el.querySelector(".plus").onclick = () => changeQty(id, 1);
@@ -315,172 +336,52 @@
       function openModal(id) { $(id).classList.add("open"); }
       function closeModal(id) { $(id).classList.remove("open"); }
 
-      async function initData() {
-        try {
-          const res = await fetch("data.json?cache=" + Date.now());
-          store = await res.json();
-          applyIdentity();
-          renderBanners();
-          renderFilters();
-          renderProducts();
-          renderCart();
-        } catch (e) {
-          toast("تعذر تحميل بيانات المنتجات.");
-        }
-      }
-
-      // GitHub Direct API
-      async function fetchGithubFileSha() {
-        const url = `https://api.github.com/repos/${ghConfig.user}/${ghConfig.repo}/contents/data.json`;
-        const res = await fetch(url, {
-          headers: { Authorization: `token ${ghConfig.token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          fileSha = data.sha;
-          return true;
-        }
-        return false;
-      }
-
-      async function saveToGithubAPI() {
-        const url = `https://api.github.com/repos/${ghConfig.user}/${ghConfig.repo}/contents/data.json`;
-        
-        const jsonString = JSON.stringify(store, null, 2);
-        const utf8Bytes = new TextEncoder().encode(jsonString);
-        const base64Content = btoa(String.fromCharCode(...utf8Bytes));
-
-        const body = {
-          message: "تحديث المنتجات والبيانات من لوحة التحكم",
-          content: base64Content,
-          sha: fileSha
-        };
-
-        const res = await fetch(url, {
-          method: "PUT",
-          headers: {
-            Authorization: `token ${ghConfig.token}`,
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(body)
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          fileSha = data.content.sha;
-          toast("تم حفظ الملف وتحديث GitHub بنجاح!");
-          renderProducts();
-          renderFilters();
-          renderBanners();
-        } else {
-          toast("حدث خطأ أثناء الحفظ على GitHub.");
-        }
-      }
-
-      function renderAdmin(view = "products") {
-        document.querySelectorAll(".admin-tab").forEach(b => b.classList.toggle("active", b.dataset.adminView === view));
-        const host = $("adminContent");
-        if (view === "products") {
-          host.innerHTML = `
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="font-bold text-lg">إدارة المنتجات</h3>
-              <button id="addProductBtn" class="bg-[#c98312] text-white px-3 py-1.5 rounded-lg font-bold text-sm">+ إضافة منتج</button>
-            </div>
-            <div class="space-y-3">
-              ${store.products.map(p => `
-                <div class="flex items-center justify-between border p-3 rounded-xl bg-white">
-                  <div class="flex items-center gap-3">
-                    <img src="${safe(p.image)}" class="w-12 h-12 rounded-lg object-cover">
-                    <div>
-                      <p class="font-bold m-0">${safe(p.name)}</p>
-                      <p class="text-xs text-gray-500 m-0">${money(p.price)}</p>
-                    </div>
-                  </div>
-                  <button class="del-prod text-red-600 font-bold text-sm" data-id="${p.id}">حذف</button>
-                </div>
-              `).join("")}
-            </div>`;
-          document.querySelectorAll(".del-prod").forEach(b => b.onclick = () => {
-            store.products = store.products.filter(x => x.id !== b.dataset.id);
-            renderAdmin("products");
-          });
-          $("addProductBtn").onclick = () => {
-            const name = prompt("اسم المنتج:");
-            const price = Number(prompt("السعر:") || 0);
-            const image = prompt("رابط الصورة:") || "https://images.unsplash.com/photo-1587049352847-4a222e784d38?auto=format&fit=crop&w=600&q=80";
-            if (name && price) {
-              store.products.push({ id: "p" + Date.now(), name, price, category: "natural", description: "وصف المنتج الجديد", image, visible: true });
-              renderAdmin("products");
-            }
-          };
-        } else if (view === "categories") {
-          host.innerHTML = `<p class="text-sm font-bold text-gray-600">يمكنك تعديل باقي الأقسام بحسب الحاجة.</p>`;
-        }
-      }
-
-      // Event Listeners
+      // أحداث الزرار والإنبوت
       $("cartButton").onclick = () => setCartOpen(!$("cartDrawer").classList.contains("open"));
       document.querySelectorAll(".close-cart").forEach(b => b.onclick = () => setCartOpen(false));
       $("cartBackdrop").onclick = () => setCartOpen(false);
       $("searchInput").oninput = renderProducts;
-      $("bannerPrev").onclick = () => { currentBanner--; if (currentBanner < 0) currentBanner = (store.banners || []).filter(b => b.active).length - 1; renderBanners(); };
+      $("bannerPrev").onclick = () => { currentBanner--; if (currentBanner < 0) currentBanner = store.banners.length - 1; renderBanners(); };
       $("bannerNext").onclick = () => { currentBanner++; renderBanners(); };
       document.querySelector(".close-product").onclick = () => closeModal("productModal");
       $("modalAddProduct").onclick = () => { if (selectedProduct) addToCart(selectedProduct.id); closeModal("productModal"); };
       $("checkoutOpen").onclick = () => { if (!cart.size) { toast("سلتك فارغة حالياً"); return; } setCartOpen(false); openModal("checkoutModal"); };
       document.querySelector(".close-checkout").onclick = () => closeModal("checkoutModal");
 
-      $("adminOpen").onclick = () => openModal("adminLoginModal");
-      document.querySelector(".close-login").onclick = () => closeModal("adminLoginModal");
-      document.querySelector(".close-admin").onclick = () => closeModal("adminModal");
-      $("adminLogout").onclick = () => { closeModal("adminModal"); toast("تم الخروج"); };
-
-      $("adminLoginForm").onsubmit = async e => {
+      // إرسال الطلب للواتساب وحفظ الطلب في Supabase
+      $("checkoutForm").onsubmit = async e => {
         e.preventDefault();
-        ghConfig.user = $("ghUsername").value.trim();
-        ghConfig.repo = $("ghRepo").value.trim();
-        ghConfig.token = $("ghToken").value.trim();
-
-        toast("جارٍ التحقق من بيانات GitHub...");
-        const ok = await fetchGithubFileSha();
-        if (ok) {
-          closeModal("adminLoginModal");
-          openModal("adminModal");
-          renderAdmin("products");
-          toast("تم الاتصال بـ GitHub بنجاح");
-        } else {
-          toast("فشل الاتصال! تأكد من اسم الحساب، المستودع، و Token.");
-        }
-      };
-
-      $("saveToGithub").onclick = saveToGithubAPI;
-      document.querySelectorAll(".admin-tab").forEach(b => b.onclick = () => renderAdmin(b.dataset.adminView));
-
-      $("checkoutForm").onsubmit = e => {
-        e.preventDefault();
-        const order = [...cart.values()].map(p => `${p.name} × ${p.quantity}`).join("، ");
+        const orderStr = [...cart.values()].map(p => `${p.name} × ${p.quantity}`).join("، ");
         const total = [...cart.values()].reduce((s, p) => s + p.price * p.quantity, 0);
-        const name = $("customerName").value;
-        const phone = $("customerPhone").value;
-        const address = `${$("customerCity").value} - ${$("customerAddress").value}`;
-        
-        let msg = store.whatsappTemplate
-          .replaceAll("{store}", store.storeName)
-          .replaceAll("{name}", name)
-          .replaceAll("{phone}", phone)
-          .replaceAll("{address}", address)
-          .replaceAll("{order}", order)
-          .replaceAll("{total}", money(total));
 
+        const customer = {
+          name: $("customerName").value,
+          phone: $("customerPhone").value,
+          city: $("customerCity").value,
+          address: $("customerAddress").value,
+          notes: $("customerNotes").value,
+          order_details: orderStr,
+          total: total
+        };
+
+        // حفظ الطلب في Supabase لو جدول الأوردرات موجود
+        if (supabase) {
+          await supabase.from('orders').insert([customer]);
+        }
+
+        const msg = `مرحباً، أود تأكيد طلبي من ${store.storeName}:\nالاسم: ${customer.name}\nالهاتف: ${customer.phone}\nالعنوان: ${customer.city} - ${customer.address}\nالطلب: ${orderStr}\nالإجمالي: ${money(total)}`;
         window.open(`https://wa.me/${store.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
+
         cart.clear();
         renderCart();
         closeModal("checkoutModal");
         $("checkoutForm").reset();
+        toast("تم إرسال طلبك بنجاح");
       };
 
-      initData();
+      fetchStoreData();
+      if (window.lucide) lucide.createIcons();
     })();
   </script>
- </body>
+</body>
 </html>
