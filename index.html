@@ -167,7 +167,7 @@
 
       let store = {
         storeName: "متجر عسل النحل",
-        whatsapp: "201000000000",
+        whatsapp: "201222245238",
         categories: [{ id: "all", name: "الكل" }],
         banners: [],
         products: []
@@ -370,7 +370,7 @@
         }
 
         const msg = `مرحباً، أود تأكيد طلبي من ${store.storeName}:\nالاسم: ${customer.name}\nالهاتف: ${customer.phone}\nالعنوان: ${customer.city} - ${customer.address}\nالطلب: ${orderStr}\nالإجمالي: ${money(total)}`;
-      window.open(`https://wa.me/201222245238?text=${encodeURIComponent(msg)}`, "_blank");
+        window.open(`https://wa.me/201222245238?text=${encodeURIComponent(msg)}`, "_blank");
         cart.clear();
         renderCart();
         closeModal("checkoutModal");
